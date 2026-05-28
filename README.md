@@ -14,4 +14,4 @@
 ## Loadstring 
 
 ```lua
-loadstring(game:HttpGet("[https://raw.githubusercontent.com/ilLu1ss/REV-HUB-EMOTES/refs/heads/main/script](https://raw.githubusercontent.com/ilLu1ss/REV-HUB-EMOTES/refs/heads/main/script)"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ilLu1ss/REV-HUB-EMOTES/refs/heads/main/script"))()
