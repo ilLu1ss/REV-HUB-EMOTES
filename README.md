@@ -30,8 +30,8 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/ilLu1ss/REV-HUB-EMOTE
 ---
 
 ## Disclaimer
-This script is for educational purposes only.
-Using this may violate Roblox's Terms of Service.
-The developer assumes no responsibility for any actions taken against your account.
-Use at your own risk.
+* This script is for educational purposes only.
+* Using this may violate Roblox's Terms of Service.
+* The developer assumes no responsibility for any actions taken against your account.
+* Use at your own risk.
 
