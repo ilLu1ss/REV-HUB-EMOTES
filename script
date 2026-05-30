@@ -1028,7 +1028,7 @@ end
 
 -- cancel emote on move 
 local CancelMoved = {}
-local function setupCancelOnMove(character)
+local function stopAnimOnMove(character)
     for _, conn in ipairs(CancelMoved) do
         conn:Disconnect()
     end
@@ -1072,9 +1072,9 @@ local function setupCancelOnMove(character)
 end
 
 if player.Character then
-    setupCancelOnMove(player.Character)
+    stopAnimOnMove(player.Character)
 end
-local cancelOnmoveListen = player.CharacterAdded:Connect(setupCancelOnMove)
+local cancelOnmoveListen = player.CharacterAdded:Connect(stopAnimOnMove)
 
 
 -- search logic system
