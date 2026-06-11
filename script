@@ -1026,59 +1026,48 @@ local function stopAnimation()
     end
 end
 
--- cancel emote on move 
-local CancelMoved = {}
-local function stopAnimOnMove(character)
-    for _, conn in ipairs(CancelMoved) do
-        conn:Disconnect()
+-- stop emote on move 
+
+local CaS = game:GetService("ContextActionService")
+
+local function onMove(action, state, obj)
+    if not settings.cancelOnMove then
+        return Enum.ContextActionResult.Pass
     end
-    CancelMoved = {}
+    if not currentAnim or not currentAnim.IsPlaying then
+        return Enum.ContextActionResult.Pass
+    end
 
-    local humanoid = character:WaitForChild("Humanoid")
+    if state == Enum.UserInputState.Begin then
+        stopAnimation()
+    end
 
-    local runConn = humanoid.Running:Connect(function(speed)
-        if not settings.cancelOnMove then return end
-        if speed > 0.1 and currentAnim and currentAnim.IsPlaying then
-            stopAnimation()
-        end
-    end)
-    table.insert(CancelMoved, runConn)
-
-    local jumpConn = humanoid.Jumping:Connect(function()
-        if not settings.cancelOnMove then return end
-        if currentAnim and currentAnim.IsPlaying then
-            stopAnimation()
-        end
-    end)
-    table.insert(CancelMoved, jumpConn)
-
-    local stateConn = humanoid.StateChanged:Connect(function(oldState, newState)
-        if not settings.cancelOnMove then return end
-
-        local moveStates = {
-            [Enum.HumanoidStateType.Running] = true,
-            [Enum.HumanoidStateType.RunningNoPhysics] = true,
-            [Enum.HumanoidStateType.Jumping] = true,
-            [Enum.HumanoidStateType.Climbing] = true,
-            [Enum.HumanoidStateType.GettingUp] = true,
-            [Enum.HumanoidStateType.Swimming] = true,
-        }
-
-        if moveStates[newState] and currentAnim and currentAnim.IsPlaying then
-            stopAnimation()
-        end
-    end)
-    table.insert(CancelMoved, stateConn)
+    return Enum.ContextActionResult.Pass
 end
 
-if player.Character then
-    stopAnimOnMove(player.Character)
+local function StopOnMove()
+
+    pcall(function()
+        CaS:UnbindAction("stopEmoteOnMove")
+    end)
+
+    CaS:BindAction(
+        "stopEmoteOnMove",
+        onMove,
+        false, 
+        Enum.PlayerActions.CharacterForward,
+        Enum.PlayerActions.CharacterBackward,
+        Enum.PlayerActions.CharacterLeft,
+        Enum.PlayerActions.CharacterRight,
+        Enum.PlayerActions.CharacterJump
+    )
 end
-local cancelOnmoveListen = player.CharacterAdded:Connect(stopAnimOnMove)
+
+StopOnMove()
+
 
 
 -- search logic system
-
 
 local searchBox = UI.textBox({
     Size = UDim2.new(1, -16, 0, 40),
@@ -2728,6 +2717,12 @@ local function closeUI()
     if dragConnection3 then
         dragConnection3:Disconnect()
     end
+
+    pcall(function()
+    CaS:UnbindAction("StopEmoteOnMove")
+    end)
+
+
     local closeTween = TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
         {
             Size = UDim2.new(0, 0, 0, 0),
