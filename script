@@ -1028,60 +1028,63 @@ end
 -- stop emote on move
 
 local function setupStopEmoteOnMove(character)
-    if not settings.cancelOnMove then
-        return
-    end
+	if not settings.cancelOnMove then
+		return
+	end
 
-    local humanoid = character:WaitForChild("Humanoid")
+	local humanoid = character:WaitForChild("Humanoid")
 
-    -- Movimiento normal
-    humanoid.Running:Connect(function(speed)
-        if not settings.cancelOnMove then
-            return
-        end
+	humanoid.Running:Connect(function(speed)
+		if not settings.cancelOnMove then
+			return
+		end
 
-        if not currentAnim or not currentAnim.IsPlaying then
-            return
-        end
+		if not currentAnim or not currentAnim.IsPlaying then
+			return
+		end
 
-        if speed > 0.75 then
-            stopAnimation()
-        end
-    end)
 
-    -- Cualquier cambio de estado importante:
-    -- salto, caída, escalada, nado, sentarse, etc.
-    humanoid.StateChanged:Connect(function(_, newState)
-        if not settings.cancelOnMove then
-            return
-        end
+		local movedDuringEmote = humanoid.MoveDirection.Magnitude < 0.1
+		local speedThreshold = movedDuringEmote and humanoid.WalkSpeed or 0.75
 
-        if not currentAnim or not currentAnim.IsPlaying then
-            return
-        end
+		if speed > speedThreshold then
+			stopAnimation()
+		end
+	end)
 
-        if newState == Enum.HumanoidStateType.Jumping
-            or newState == Enum.HumanoidStateType.Freefall
-            or newState == Enum.HumanoidStateType.FallingDown
-            or newState == Enum.HumanoidStateType.Climbing
-            or newState == Enum.HumanoidStateType.Swimming
-            or newState == Enum.HumanoidStateType.Seated
-            or newState == Enum.HumanoidStateType.PlatformStanding
-            or newState == Enum.HumanoidStateType.Ragdoll
-            or newState == Enum.HumanoidStateType.Dead then
-            stopAnimation()
-        end
-    end)
+	humanoid.StateChanged:Connect(function(_, newState)
+		if not settings.cancelOnMove then
+			return
+		end
+
+		if not currentAnim or not currentAnim.IsPlaying then
+			return
+		end
+
+		if newState == Enum.HumanoidStateType.Jumping
+			or newState == Enum.HumanoidStateType.Freefall
+			or newState == Enum.HumanoidStateType.FallingDown
+			or newState == Enum.HumanoidStateType.Climbing
+			or newState == Enum.HumanoidStateType.Swimming
+			or newState == Enum.HumanoidStateType.Seated
+			or newState == Enum.HumanoidStateType.PlatformStanding
+			or newState == Enum.HumanoidStateType.Ragdoll
+			or newState == Enum.HumanoidStateType.Dead then
+			stopAnimation()
+		end
+	end)
 end
 
 
 if player.Character then
-    setupStopEmoteOnMove(player.Character)
+	setupStopEmoteOnMove(player.Character)
 end
 
 local StopOnMoveCon = player.CharacterAdded:Connect(function(character)
-    setupStopEmoteOnMove(character)
+	setupStopEmoteOnMove(character)
 end)
+
+
 
 
 
