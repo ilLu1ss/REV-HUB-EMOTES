@@ -1,11 +1,11 @@
 --[[
     Rev Emotes
-    Version: 3.0
+    Version: 3.2
     By: Rev
-    Consider keeping the original credits when editing or using parts of the code, thanks. 
+    Consider keeping the original credits when editing or using parts of the code, thanks.
 ]]
 
--- variables 
+-- variables
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
@@ -13,11 +13,12 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
 local MarketplaceService = game:GetService("MarketplaceService")
+local version = "v3.2" -- too lazy to change the text lmao
 
 
 
 
--- lucide icons 
+-- lucide icons
 local Lucide = loadstring(game:HttpGet(
     "https://raw.githubusercontent.com/Footagesus/Icons/refs/heads/main/lucide/dist/Icons.lua"))()
 
@@ -142,7 +143,7 @@ function loadData()
     end
 end
 
-loadData() 
+loadData()
 
 
 local function randomString(length)
@@ -171,7 +172,7 @@ local function getSecureParent()
 end
 
 
--- colors 
+-- colors
 local colors = {
     black = Color3.fromRGB(5, 5, 8),
     border = Color3.fromRGB(70, 50, 100),
@@ -319,7 +320,6 @@ function UI.create(class, props, parent)
     return obj
 end
 
-
 function UI.frame(props, parent)
     local defaults = {
         Size = UDim2.new(1, 0, 0, 60),
@@ -465,8 +465,7 @@ function UI.icon(name, size, props, parent)
     return UI.imageLabel(defaults, parent)
 end
 
-
--- notifications system 
+-- notifications system
 
 local Notifications = {}
 
@@ -510,13 +509,13 @@ function Notifications.init(screenGui)
         BackgroundTransparency = 1,
         ZIndex = 100,
     }, screenGui)
-    
-    UI.create("UIListLayout", {    
+
+    UI.create("UIListLayout", {
         HorizontalAlignment = Enum.HorizontalAlignment.Right,
         VerticalAlignment = Enum.VerticalAlignment.Top,
-        Padding = UDim.new(0, 14),    
+        Padding = UDim.new(0, 14),
     }, notificationHolder)
-    
+
     UI.create("UIPadding", {
         PaddingTop = UDim.new(0, 8),
         PaddingRight = UDim.new(0, 8),
@@ -617,7 +616,6 @@ function showNotification(message, notifType)
     Notifications.show(message, notifType)
 end
 
-
 -- main gui creation
 local secureParent = getSecureParent()
 local screenGui
@@ -693,10 +691,10 @@ UI.label({
     Name = "Version",
     Size = UDim2.new(0, 60, 1, 0),
     Position = UDim2.new(0.5, -30, 0, 0),
-    Text = "v3.0",
+    Text = version or "DebugVersion",
     Font = Enum.Font.Gotham,
-    TextSize = 13,
-    TextColor3 = colors.textMuted,
+    TextSize = 14,
+    TextColor3 = Color3.fromHex("#ffffff"),
     TextXAlignment = Enum.TextXAlignment.Center,
 }, topBar)
 
@@ -782,7 +780,7 @@ end)
 
 
 
--- Content area frame    
+-- Content area frame
 
 local contentAreaFrame = UI.frame({
     Name = "ContentAreaFrame",
@@ -795,7 +793,7 @@ local contentAreaFrame = UI.frame({
 }, mainFrame)
 
 
--- Tabs container frame 
+-- Tabs container frame
 local tabContainer = UI.frame({
     Name = "TabContainer",
     Size = UDim2.new(0, 152, 0, 480 - 44 - 20),
@@ -817,7 +815,7 @@ UI.create("UIPadding", {
 }, tabContainer)
 
 
--- localplayer thumbnail (cooment this block if you dont want this)
+-- localplayer thumbnail (coment this block if you dont want this)
 local lpContainer = UI.frame({
     Name = "ProfileContainer",
     Size = UDim2.new(0, 100, 0, 110),
@@ -831,7 +829,8 @@ local avatarThumb = UI.create("ImageLabel", {
     Position = UDim2.new(0.5, -28, 0, 10),
     BackgroundColor3 = colors.surface2,
     BackgroundTransparency = 0,
-    Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=150&height=150&format=png",
+    Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" ..
+    player.UserId .. "&width=150&height=150&format=png",
     BorderSizePixel = 0,
     CornerRadius = UDim.new(1, 0),
 }, lpContainer)
@@ -890,7 +889,7 @@ function newTab(args)
     local iconName = args.icon or "circle"
     local layoutOrder = args.order or #allTabs + 1
 
-    -- panels tabs content 
+    -- panels tabs content
     local panel = UI.frame({
         Name = name .. "Panel",
         Size = UDim2.new(1, 0, 1, 0),
@@ -915,7 +914,7 @@ function newTab(args)
         AutoButtonColor = false,
     }, tabContainer)
 
-    -- Icon 
+    -- Icon
     local icon = UI.icon(iconName, 18, {
         Name = "Icon",
         Position = UDim2.new(0, 14, 0.5, -9),
@@ -955,8 +954,7 @@ function newTab(args)
     return panel
 end
 
-
--- tabs 
+-- tabs
 local searchTab = newTab({ name = "Search", icon = "search", order = 1 })
 local emotesIdTab = newTab({ name = "ID", icon = "hash", order = 2 })
 local favoritesTab = newTab({ name = "Favorites", icon = "star", order = 3 })
@@ -1009,7 +1007,7 @@ local function playAnimation(assetId, customName)
         return false
     end
 
-    anim.Priority = Enum.AnimationPriority.Movement
+    anim.Priority = Enum.AnimationPriority.Action3
     anim:Play()
     if settings.speed ~= 1.0 then
         anim:AdjustSpeed(settings.speed)
@@ -1026,44 +1024,66 @@ local function stopAnimation()
     end
 end
 
--- stop emote on move 
 
-local CaS = game:GetService("ContextActionService")
+-- stop emote on move
 
-local function onMove(action, state, obj)
+local function setupStopEmoteOnMove(character)
     if not settings.cancelOnMove then
-        return Enum.ContextActionResult.Pass
-    end
-    if not currentAnim or not currentAnim.IsPlaying then
-        return Enum.ContextActionResult.Pass
+        return
     end
 
-    if state == Enum.UserInputState.Begin then
-        stopAnimation()
-    end
+    local humanoid = character:WaitForChild("Humanoid")
 
-    return Enum.ContextActionResult.Pass
-end
+    -- Movimiento normal
+    humanoid.Running:Connect(function(speed)
+        if not settings.cancelOnMove then
+            return
+        end
 
-local function StopOnMove()
+        if not currentAnim or not currentAnim.IsPlaying then
+            return
+        end
 
-    pcall(function()
-        CaS:UnbindAction("stopEmoteOnMove")
+        if speed > 0.75 then
+            stopAnimation()
+        end
     end)
 
-    CaS:BindAction(
-        "stopEmoteOnMove",
-        onMove,
-        false, 
-        Enum.PlayerActions.CharacterForward,
-        Enum.PlayerActions.CharacterBackward,
-        Enum.PlayerActions.CharacterLeft,
-        Enum.PlayerActions.CharacterRight,
-        Enum.PlayerActions.CharacterJump
-    )
+    -- Cualquier cambio de estado importante:
+    -- salto, caída, escalada, nado, sentarse, etc.
+    humanoid.StateChanged:Connect(function(_, newState)
+        if not settings.cancelOnMove then
+            return
+        end
+
+        if not currentAnim or not currentAnim.IsPlaying then
+            return
+        end
+
+        if newState == Enum.HumanoidStateType.Jumping
+            or newState == Enum.HumanoidStateType.Freefall
+            or newState == Enum.HumanoidStateType.FallingDown
+            or newState == Enum.HumanoidStateType.Climbing
+            or newState == Enum.HumanoidStateType.Swimming
+            or newState == Enum.HumanoidStateType.Seated
+            or newState == Enum.HumanoidStateType.PlatformStanding
+            or newState == Enum.HumanoidStateType.Ragdoll
+            or newState == Enum.HumanoidStateType.Dead then
+            stopAnimation()
+        end
+    end)
 end
 
-StopOnMove()
+
+if player.Character then
+    setupStopEmoteOnMove(player.Character)
+end
+
+local StopOnMoveCon = player.CharacterAdded:Connect(function(character)
+    setupStopEmoteOnMove(character)
+end)
+
+
 
 
 
@@ -1215,7 +1235,6 @@ local function searchEmotes(query, cursor)
     end
 
     if not cursor then
-
         if cleanQuery == currentQuery and searchCache[cleanQuery .. "_1"] then
             currentPage = 1
             pageCursors = { [1] = nil }
@@ -1237,7 +1256,6 @@ local function searchEmotes(query, cursor)
     local data = searchCache[cacheKey]
 
     if data then
-
         isSearchRequestActive = false
         activeRequestSignature = requestSignature
     else
@@ -1631,7 +1649,7 @@ local function createRenameDialog(oldName, callback)
     end)
 end
 
--- delete fav dialog 
+-- delete fav dialog
 local function createConfirmDialog(message, onConfirm)
     local dialog = UI.frame({
         Size = UDim2.new(0, 300, 0, 140),
@@ -1743,7 +1761,7 @@ function refreshFavorites()
             TextWrapped = true,
         }, card)
 
-        -- 
+        --
         local menuBtn = UI.imageButton({
             Size = UDim2.new(0, 18, 0, 18),
             Position = UDim2.new(1, -26, 0, 0),
@@ -1845,6 +1863,7 @@ function selectTab(targetPanel, targetButton, targetIcon)
     _originalSelectTab(targetPanel, targetButton, targetIcon)
     refreshTabContent(targetPanel)
 end
+
 ------------------------------------------------------------------------------------
 
 -- players content
@@ -1871,14 +1890,14 @@ end)
 local playersScroll = UI.scrollingFrame({
     Name = "PlayersScroll",
     Size = UDim2.new(1, -16, 1, -60),
-    Position = UDim2.new(0, 8, 0, 52), 
+    Position = UDim2.new(0, 8, 0, 52),
     BackgroundTransparency = 1,
     BorderSizePixel = 0,
     CanvasSize = UDim2.new(0, 0, 0, 0),
     ScrollBarThickness = 4,
     ScrollBarImageColor3 = colors.primary,
     AutomaticCanvasSize = Enum.AutomaticSize.None,
-    ClipsDescendants = true, 
+    ClipsDescendants = true,
 }, playersTab)
 
 local playersListLayout = UI.create("UIListLayout", {
@@ -1886,7 +1905,7 @@ local playersListLayout = UI.create("UIListLayout", {
     SortOrder = Enum.SortOrder.LayoutOrder,
 }, playersScroll)
 
--- spectate value 
+-- spectate value
 local spectating = false
 local currentSpectated = nil
 
@@ -1901,7 +1920,7 @@ local function stopSpectating()
     end
 end
 
--- players list 
+-- players list
 function loadPlayers(filter)
     filter = filter and filter:lower() or ""
 
@@ -1971,7 +1990,7 @@ function loadPlayers(filter)
             TextSize = 11,
         }, card)
 
-        -- spectate bttn 
+        -- spectate bttn
         local isSpectatingThis = spectating and currentSpectated == plr
         local spectateBtn = UI.imageButton({
             Name = "SpectateBtn",
@@ -2157,7 +2176,7 @@ local settingsScroll = UI.scrollingFrame({
 }, settingsTab)
 
 local settingsList = UI.create("UIListLayout", {
-    Padding = UDim.new(0, 12),
+    Padding = UDim.new(0, 14),
     SortOrder = Enum.SortOrder.LayoutOrder,
 }, settingsScroll)
 
@@ -2167,6 +2186,11 @@ local emoteSection = UI.frame({
     Size = UDim2.new(1, 0, 0, 180),
     BgColor = colors.surface,
     CornerRadius = UDim.new(0, 12),
+    Stroke = {
+        Color = Color3.fromRGB(45, 45, 55),
+        Thickness = 1,
+        Transparency = 0,
+    },
     LayoutOrder = 1,
 }, settingsScroll)
 
@@ -2195,7 +2219,7 @@ local speedValueLabel = UI.label({
     Name = "SpeedValue",
     Size = UDim2.new(0, 50, 0, 20),
     Position = UDim2.new(1, -62, 0, 42),
-    Text = string.format("%.1fx", settings.speed or 1.0),
+    Text = string.format("x%.1f", settings.speed or 1.0),
     Font = Enum.Font.GothamBold,
     TextSize = 12,
     TextXAlignment = Enum.TextXAlignment.Right,
@@ -2235,13 +2259,16 @@ local resetSpeedBtn = UI.button({
     Position = UDim2.new(1, -92, 0, 90),
     Text = "Reset",
     TextSize = 11,
-    BgColor = colors.surface2,
+    BgColor = colors.danger,
     CornerRadius = UDim.new(0, 8),
 }, emoteSection)
 
 resetSpeedBtn.MouseButton1Click:Connect(function()
+    if settings.speed == 1.0 then
+        return
+    end
     settings.speed = 1.0
-    speedValueLabel.Text = "1.0x"
+    speedValueLabel.Text = "x1.0"
     speedBar.Size = UDim2.new((1.0 - 0.5) / 2.5, 0, 1, 0)
     speedThumb.Position = UDim2.new((1.0 - 0.5) / 2.5, -8, 0.5, -8)
     if currentAnim and currentAnim.IsPlaying then
@@ -2261,7 +2288,7 @@ local function updateSpeedFromPosition(mouseX)
     settings.speed = 0.5 + (relativePos * 2.5)
     speedBar.Size = UDim2.new(relativePos, 0, 1, 0)
     speedThumb.Position = UDim2.new(relativePos, -8, 0.5, -8)
-    speedValueLabel.Text = string.format("%.1fx", settings.speed)
+    speedValueLabel.Text = string.format("x%.1f", settings.speed)
 
     if currentAnim and currentAnim.IsPlaying then
         currentAnim:AdjustSpeed(settings.speed)
@@ -2335,75 +2362,19 @@ cancelToggleBtn.MouseButton1Click:Connect(function()
     showNotification(settings.cancelOnMove and "Cancel on move enabled" or "Cancel on move disabled", "info")
 end)
 
--- walk 
-local walkSection = UI.frame({
-    Name = "WalkSection",
-    Size = UDim2.new(1, 0, 0, 80),
-    BgColor = colors.surface,
-    CornerRadius = UDim.new(0, 12),
-    LayoutOrder = 2,
-}, settingsScroll)
-
-UI.label({
-    Name = "WalkTitle",
-    Size = UDim2.new(1, -100, 0, 20),
-    Position = UDim2.new(0, 12, 0, 14),
-    Text = "Toggle Walk",
-    Font = Enum.Font.GothamSemibold,
-    TextSize = 12,
-    TextColor3 = colors.text,
-}, walkSection)
-
-UI.label({
-    Name = "WalkDesc",
-    Size = UDim2.new(1, -100, 0, 16),
-    Position = UDim2.new(0, 12, 0, 34),
-    Text = "Slow walk mode (speed: 10)",
-    TextColor3 = colors.textMuted,
-    TextSize = 10,
-}, walkSection)
-
-local isWalking = false
-local walkToggleBtn = UI.button({
-    Name = "WalkToggle",
-    Size = UDim2.new(0, 50, 0, 28),
-    Position = UDim2.new(1, -62, 0, 22),
-    Text = "OFF",
-    TextSize = 11,
-    BgColor = colors.danger,
-    CornerRadius = UDim.new(0, 8),
-}, walkSection)
-
-local function setWalkState(enabled)
-    isWalking = enabled
-    local character = player.Character
-    local humanoid = character and character:FindFirstChildWhichIsA("Humanoid")
-
-    if humanoid then
-        humanoid.WalkSpeed = isWalking and 10 or 16
-    end
-
-    walkToggleBtn.Text = isWalking and "ON" or "OFF"
-    walkToggleBtn.BackgroundColor3 = isWalking and colors.success or colors.danger
-end
-
-walkToggleBtn.MouseButton1Click:Connect(function()
-    setWalkState(not isWalking)
-end)
-
-local resetWalkSOnRespawn = player.CharacterAdded:Connect(function()
-    isWalking = false
-    walkToggleBtn.Text = "OFF"
-    walkToggleBtn.BackgroundColor3 = colors.danger
-end)
 
 
 local uiSection = UI.frame({
     Name = "UISection",
-    Size = UDim2.new(1, 0, 0, 100),
+    Size = UDim2.new(1, 0, 0, 110),
     BgColor = colors.surface,
     CornerRadius = UDim.new(0, 12),
-    LayoutOrder = 3,
+    Stroke = {
+        Color = Color3.fromRGB(45, 45, 55),
+        Thickness = 1,
+        Transparency = 0,
+    },
+    LayoutOrder = 2,
 }, settingsScroll)
 
 UI.label({
@@ -2562,9 +2533,9 @@ local floatEndListen = UserInputService.InputEnded:Connect(function(input)
 end)
 
 
--- minimize 
+-- minimize
 local isMinimized = false
-local lastMainFramePos = nil 
+local lastMainFramePos = nil
 
 function toggleMinimize()
     isMinimized = not isMinimized
@@ -2590,7 +2561,7 @@ function toggleMinimize()
         floatingContainer.Visible = false
         mainFrame.Visible = true
         mainFrame.Size = UDim2.new(0, 0, 0, 0)
-        mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0) 
+        mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
         mainFrame.BackgroundTransparency = 1
 
         contentAreaFrame.Visible = true
@@ -2638,7 +2609,7 @@ function toggleMinimize()
     end
 end]]
 
-local minimizeHandler =  minimizeBtn.MouseButton1Click:Connect(toggleMinimize)
+local minimizeHandler = minimizeBtn.MouseButton1Click:Connect(toggleMinimize)
 local openHandler = openBtn.MouseButton1Click:Connect(toggleMinimize)
 
 local KMinimize = UserInputService.InputBegan:Connect(function(input, gp)
@@ -2653,7 +2624,6 @@ end)
 
 -- Close
 local function closeUI()
-
     if KMinimize then KMinimize:Disconnect() end
 
     if ListenMinimizeBind then ListenMinimizeBind:Disconnect() end
@@ -2668,14 +2638,12 @@ local function closeUI()
 
     if floatEndListen then floatEndListen:Disconnect() end
 
-    if resetWalkSOnRespawn then resetWalkSOnRespawn:Disconnect() end
-
     if playersAddedListen then playersAddedListen:Disconnect() end
 
     if playersRemovingListen then playersRemovingListen:Disconnect() end
 
     if spectating then stopSpectating() end
-    
+
     if minimizeHandler then minimizeHandler:Disconnect() end
 
     if openHandler then openHandler:Disconnect() end
@@ -2683,15 +2651,7 @@ local function closeUI()
     if currentAnim and currentAnim.IsPlaying then
         currentAnim:Stop()
     end
-    
-    if player.Character and player.Character:FindFirstChildWhichIsA("Humanoid") then
-        player.Character:FindFirstChildWhichIsA("Humanoid").WalkSpeed = 16
-    end
 
-    if isWalking then
-        isWalking = false
-    end
-    
     if isMinimized then
         toggleMinimize()
     end
@@ -2718,10 +2678,9 @@ local function closeUI()
         dragConnection3:Disconnect()
     end
 
-    pcall(function()
-    CaS:UnbindAction("StopEmoteOnMove")
-    end)
-
+    if StopOnMoveCon then
+        StopOnMoveCon:Disconnect()
+    end
 
     local closeTween = TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
         {
@@ -2736,6 +2695,94 @@ local function closeUI()
         end
     end)
 end
-closeBtn.MouseButton1Click:Connect(closeUI)
+
+-- Close dialog
+local closeDialog = nil
+
+local function CloseDialog()
+    if closeDialog and closeDialog.Parent then
+        return
+    end
+
+    closeDialog = UI.frame({
+        Name = "CloseConfirmDialog",
+        Size = UDim2.new(0, 320, 0, 160),
+        Position = UDim2.new(0.5, -160, 0.5, -80),
+        BgColor = colors.surface,
+        CornerRadius = UDim.new(0, 12),
+        Stroke = {
+            Color = Color3.fromRGB(50, 50, 60),
+            Thickness = 1,
+            Transparency = 0,
+        },
+        ZIndex = 200,
+        Active = true,
+    }, screenGui)
+
+    UI.label({
+        Name = "Title",
+        Size = UDim2.new(1, -20, 0, 26),
+        Position = UDim2.new(0, 10, 0, 14),
+        Text = "Close REV Emotes?",
+        Font = Enum.Font.GothamBold,
+        TextSize = 16,
+        TextColor3 = colors.text,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        ZIndex = 201,
+    }, closeDialog)
+
+     UI.label({
+        Name = "Description",
+        Size = UDim2.new(1, -30, 0, 38),
+        Position = UDim2.new(0, 15, 0, 44),
+        Text = "Are you sure you want to close the emote menu?",
+        Font = Enum.Font.Gotham,
+        TextSize = 12,
+        TextColor3 = colors.textMuted,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        TextWrapped = true,
+        ZIndex = 201,
+    }, closeDialog)
+
+    local cancelBtn = UI.button({
+        Name = "CancelButton",
+        Size = UDim2.new(0, 110, 0, 34),
+        Position = UDim2.new(0.5, -115, 1, -48),
+        Text = "Cancel",
+        TextSize = 12,
+        BgColor = colors.surface2,
+        CornerRadius = UDim.new(0, 8),
+        ZIndex = 201,
+    }, closeDialog)
+
+    local confirmBtn = UI.button({
+        Name = "ConfirmButton",
+        Size = UDim2.new(0, 110, 0, 34),
+        Position = UDim2.new(0.5, 5, 1, -48),
+        Text = "Close",
+        TextSize = 12,
+        BgColor = colors.danger,
+        CornerRadius = UDim.new(0, 8),
+        ZIndex = 201,
+    }, closeDialog)
+
+    cancelBtn.MouseButton1Click:Connect(function()
+        if closeDialog then
+            closeDialog:Destroy()
+            closeDialog = nil
+        end
+    end)
+
+    confirmBtn.MouseButton1Click:Connect(function()
+        if closeDialog then
+            closeDialog:Destroy()
+            closeDialog = nil
+        end
+
+        closeUI()
+    end)
+end
+
+closeBtn.MouseButton1Click:Connect(CloseDialog)
 
 showNotification("REV Emotes loaded successfully", "success")
